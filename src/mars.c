@@ -398,6 +398,7 @@ Usage:\n\
   -man           open web browser on manual page\n\
   -map           generate linker .map file\n\
   -noboundscheck turns off array bounds checking for all functions\n\
+  -nogc          warn about allocations from the GC\n\
   -O             optimize\n\
   -o-            do not write object file\n\
   -odobjdir      write object & library files to directory objdir\n\
@@ -877,6 +878,8 @@ Language changes listed by -transition=id:\n\
                 global.params.lib = 1;
             else if (strcmp(p + 1, "nofloat") == 0)
                 global.params.nofloat = 1;
+            else if (strcmp(p + 1, "nogc") == 0)
+                global.params.nogc = 1;
             else if (strcmp(p + 1, "quiet") == 0)
                 global.params.quiet = 1;
             else if (strcmp(p + 1, "release") == 0)

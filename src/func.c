@@ -3686,6 +3686,8 @@ bool FuncDeclaration::needsClosure()
 
 Lyes:
     //printf("\tneeds closure\n");
+    if (global.params.nogc)
+        warning(loc, "%s %s will allocate closure from GC", kind(), toChars());
     return true;
 }
 #endif
