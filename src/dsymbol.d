@@ -172,6 +172,8 @@ enum : int
     IgnorePrivateMembers    = 0x01, // don't find private members
     IgnoreErrors            = 0x02, // don't give error messages
     IgnoreAmbiguous         = 0x04, // return NULL if ambiguous
+    IgnoreImports           = 0x08, // don't find symbols in imports
+    IgnoreThisModule        = 0x10, // only look in imports
 }
 
 extern (C++) alias Dsymbol_apply_ft_t = int function(Dsymbol, void*);
@@ -191,7 +193,7 @@ public:
     bool errors;            // this symbol failed to pass semantic()
     PASS semanticRun;
 
-    DeprecatedDeclaration depdecl;           // customized deprecation message
+    char* depmsg;           // customized deprecation message
     UserAttributeDeclaration userAttribDecl;    // user defined attributes
 
     // !=null means there's a ddoc unittest associated with this symbol
@@ -312,7 +314,7 @@ public:
             const(char)* message = null;
             for (Dsymbol p = this; p; p = p.parent)
             {
-                message = p.depdecl ? p.depdecl.msgstr : null;
+                message = p.depmsg;
                 if (message)
                     break;
             }
@@ -570,8 +572,8 @@ public:
         if (!sc.nofree)
             sc.setNoFree(); // may need it even after semantic() finishes
         _scope = sc;
-        if (sc.depdecl)
-            depdecl = sc.depdecl;
+        if (sc.depmsg)
+            depmsg = sc.depmsg;
         if (!userAttribDecl)
             userAttribDecl = sc.userAttribDecl;
     }
@@ -606,14 +608,16 @@ public:
 
     /*********************************************
      * Search for ident as member of s.
-     * Input:
-     *      flags:  (see IgnoreXXX declared in dsymbol.h)
+     * Params:
+     *  loc = location to print for error messages
+     *  ident = identifier to search for
+     *  flags = IgnoreXXXX
      * Returns:
-     *      NULL if not found
+     *  null if not found
      */
     Dsymbol search(Loc loc, Identifier ident, int flags = IgnoreNone)
     {
-        //printf("Dsymbol::search(this=%p,%s, ident='%s')\n", this, toChars(), ident->toChars());
+        //printf("Dsymbol::search(this=%p,%s, ident='%s')\n", this, toChars(), ident.toChars());
         return null;
     }
 
@@ -1231,19 +1235,26 @@ public:
      */
     override Dsymbol search(Loc loc, Identifier ident, int flags = IgnoreNone)
     {
-        //printf("%s->ScopeDsymbol::search(ident='%s', flags=x%x)\n", toChars(), ident->toChars(), flags);
+        //printf("%s.ScopeDsymbol::search(ident='%s', flags=x%x)\n", toChars(), ident.toChars(), flags);
         //if (strcmp(ident->toChars(),"c") == 0) *(char*)0=0;
+
         // Look in symbols declared in this module
-        Dsymbol s1 = symtab ? symtab.lookup(ident) : null;
-        //printf("\ts1 = %p, importedScopes = %p, %d\n",
-        //       s1, importedScopes, importedScopes ? importedScopes.dim : 0);
-        if (s1)
+        if (symtab && !(flags & IgnoreThisModule))
         {
-            //printf("\ts = '%s.%s'\n",toChars(),s1->toChars());
-            return s1;
+            //printf(" look in locals\n");
+            auto s1 = symtab.lookup(ident);
+            if (s1)
+            {
+                //printf("\tfound in locals = '%s.%s'\n",toChars(),s1.toChars());
+                return s1;
+            }
         }
+        //printf(" not found in locals\n");
+
+        // Look in imported scopes
         if (importedScopes)
         {
+            //printf(" look in imports\n");
             Dsymbol s = null;
             OverloadSet a = null;
             int sflags = flags & (IgnoreErrors | IgnoreAmbiguous); // remember these in recursive searches
@@ -1255,6 +1266,18 @@ public:
                     continue;
                 Dsymbol ss = (*importedScopes)[i];
                 //printf("\tscanning import '%s', prots = %d, isModule = %p, isImport = %p\n", ss->toChars(), prots[i], ss->isModule(), ss->isImport());
+
+                if (ss.isModule())
+                {
+                    if (flags & IgnoreImports)
+                        continue;
+                }
+                else
+                {
+                    if (flags & IgnoreThisModule)
+                        continue;
+                }
+
                 /* Don't find private members if ss is a module
                  */
                 Dsymbol s2 = ss.search(loc, ident, sflags | (ss.isModule() ? IgnorePrivateMembers : IgnoreNone));
@@ -1325,10 +1348,12 @@ public:
                     if (!s.isImport())
                         error(loc, "%s %s is private", s.kind(), s.toPrettyChars());
                 }
+                //printf("\tfound in imports %s.%s\n", toChars(), s.toChars());
                 return s;
             }
+            //printf(" not found in imports\n");
         }
-        return s1;
+        return null;
     }
 
     final OverloadSet mergeOverloadSet(Identifier ident, OverloadSet os, Dsymbol s)
