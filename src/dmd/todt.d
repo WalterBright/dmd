@@ -192,7 +192,7 @@ extern (C++) void Initializer_toDt(Initializer init, ref DtBuilder dtb)
 
     void visitExp(ExpInitializer ei)
     {
-        //printf("ExpInitializer.toDt() %s\n", ei.exp.toChars());
+        printf("ExpInitializer.toDt() %s\n", ei.exp.toChars());
         ei.exp = ei.exp.optimize(WANTvalue);
         Expression_toDt(ei.exp, dtb);
     }

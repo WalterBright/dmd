@@ -462,17 +462,30 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         }
 
         /* C11 6.7.9-14..15
-         * Initialize an array of unknown size with a string.
          * ImportC regards Tarray as an array of unknown size.
          * Change to static array of known size
          */
-        if (sc.flags & SCOPE.Cfile && i.exp.op == TOK.string_ && tb.ty == Tarray)
+        if (sc.flags & SCOPE.Cfile && tb.ty == Tarray)
         {
-            StringExp se = i.exp.isStringExp();
-            auto ts = new TypeSArray(tb.nextOf(), new IntegerExp(Loc.initial, se.len + 1, Type.tsize_t));
-            t = typeSemantic(ts, Loc.initial, sc);
-            i.exp.type = t;
-            tx = t;
+	    d_uns64 dim;
+	    if (i.exp.op == TOK.string_)
+	    {
+ 	        /* Initialize an array of unknown size with a string,
+		 * including terminating 0 in the size
+		 */
+		dim = i.exp.isStringExp().len + 1;
+	    }
+	    else
+	    {
+ 	        /* Initialize an array of unknown size with a single element
+		 */
+		dim = 1;
+	    }
+	    auto ts = new TypeSArray(tb.nextOf(), new IntegerExp(Loc.initial, dim, Type.tsize_t));
+	    t = typeSemantic(ts, Loc.initial, sc);
+	    i.exp.type = t;
+printf("xyzzy %s\n", i.exp.toChars());
+	    tx = t;
         }
 
         // Look for implicit constructor call
