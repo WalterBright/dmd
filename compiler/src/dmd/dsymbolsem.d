@@ -1354,7 +1354,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
             if (imp.mod.needmoduleinfo)
             {
-                //printf("module4 %s because of %s\n", importer.toChars(), imp.mod.toChars());
+                printf("needmoduleinfo: module %s imports %s\n", importer.toChars(), imp.mod.toChars());
                 importer.needmoduleinfo = 1;
             }
 
@@ -4319,8 +4319,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             m = sc._module;
         if (m)
         {
+            printf("needmoduleinfo because module %s has static constructor\n", m.toChars());
             m.needmoduleinfo = 1;
-            //printf("module1 %s needs moduleinfo\n", m.toChars());
         }
     }
 
@@ -4417,8 +4417,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             m = sc._module;
         if (m)
         {
+            printf("needmoduleinfo because module %s has static destructor\n", m.toChars());
             m.needmoduleinfo = 1;
-            //printf("module2 %s needs moduleinfo\n", m.toChars());
         }
     }
 
@@ -4507,7 +4507,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 m = sc._module;
             if (m)
             {
-                //printf("module3 %s needs moduleinfo\n", m.toChars());
+                printf("needmoduleinfo because module %s has unittests\n", m.toChars());
                 m.needmoduleinfo = 1;
             }
         }

@@ -2672,6 +2672,7 @@ private void reconcileCommands(ref Param params, ref Target target)
         if (params.checkAction != CHECKACTION.halt)
             params.checkAction = CHECKACTION.C;
 
+        params.useModuleInfo = false;
         params.useTypeInfo = false;
         params.useExceptions = false;
     }
