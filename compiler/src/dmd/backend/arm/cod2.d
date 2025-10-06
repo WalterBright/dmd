@@ -1277,6 +1277,7 @@ void cdmemcmp(ref CGstate cg,ref CodeBuilder cdb,elem* e,ref regm_t pretregs)
 void cdmemset(ref CGstate cg, ref CodeBuilder cdb,elem* e,ref regm_t pretregs)
 {
     //printf("cdmemset(pretregs = %s)\n", regm_str(pretregs));
+    //elem_print(e);
     elem* e2 = e.E2;
     assert(e2.Eoper == OPparam);
 
@@ -1330,6 +1331,7 @@ void cdmemset(ref CGstate cg, ref CodeBuilder cdb,elem* e,ref regm_t pretregs)
         regm_t dstregs = cgstate.allregs & ~(nbytesregs | valueregs);
         scodelem(cgstate,cdb,e.E1,dstregs,nbytesregs | valueregs,false);
         reg_t dstreg = findreg(dstregs);
+        //printf("dstreg: %d valuereg: %d\n", dstreg, valuereg);
 
         regm_t retregs;
         if (pretregs)                              // if need return value
@@ -1352,7 +1354,7 @@ void cdmemset(ref CGstate cg, ref CodeBuilder cdb,elem* e,ref regm_t pretregs)
             cdb.append(cnop);
 
             cdb.gen1(INSTR.ldst_immpost(3,0,0,8,dstreg,valuereg));      // STR  valuereg,[dstreg],#8        // *dstreg++ = valuereg
-            cdb.gen1(INSTR.cmp_subs_addsub_shift(1,dstreg,0,0,limit));              // CMP  limit,dstreg
+            cdb.gen1(INSTR.cmp_subs_addsub_shift(1,dstreg,0,0,limit));  // CMP  limit,dstreg
             genBranch(cdb,COND.ne,FL.code,cast(block*)cnop);            // JNE cnop
         }
 
