@@ -6951,6 +6951,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
      */
     private AST.Initializer parseInitializer()
     {
+        //printf("parseInitializer()\n");
         const loc = token.loc;
 
         switch (token.value)
@@ -7024,6 +7025,16 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     ia.addInit(e, value);
                     commaExpected = true;
                     continue;
+
+                case TOK.dotDotDot:
+                    if (commaExpected)
+                    {
+                        error("comma expected before `...]`");
+                    }
+                    ia.defaultInitialize = true;
+                    nextToken();
+                    check(TOK.rightBracket);
+                    break;
 
                 case TOK.leftCurly:
                 case TOK.leftBracket:
