@@ -1456,7 +1456,7 @@ void processEnvironment()
 
     // LDC errors when using `-m32|64` along with `-mtriple` or `-march`
     if (!userDflags.any!(f => f.startsWith("-mtriple") || f.startsWith("-march")))
-        dflags ~= env["MODEL_FLAG"];
+        dflags ~= "-m" ~ env["MODEL"];
 
     flags["DFLAGS"] = dflags;
 }
@@ -1505,7 +1505,7 @@ void processEnvironmentCxx()
 
     // omit model flag with user-specified `-arch` for clang
     if (!userCxxFlags.any!(f => f.startsWith("-arch")))
-        cxxFlags ~= env["MODEL_FLAG"];
+        cxxFlags ~= "-m" ~ env["MODEL"];
 
     flags["CXXFLAGS"] = cxxFlags;
 }

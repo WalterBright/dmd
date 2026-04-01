@@ -85,7 +85,7 @@ MAKEFILE = $(firstword $(MAKEFILE_LIST))
 DDOCFLAGS=-conf= -c -w -o- -Iimport -version=CoreDdoc
 
 # Set CFLAGS
-CFLAGS=$(if $(findstring $(OS),windows),,$(MODEL_FLAG) -fPIC -DHAVE_UNISTD_H)
+CFLAGS=$(if $(findstring $(OS),windows),,-m$(MODEL) -fPIC -DHAVE_UNISTD_H)
 ifeq ($(BUILD),debug)
 	CFLAGS += -g
 else
@@ -101,7 +101,7 @@ ifeq (osx,$(OS))
 endif
 
 # Set DFLAGS
-UDFLAGS:=-conf= -Isrc -Iimport -w -de -preview=dip1000 -preview=fieldwise $(MODEL_FLAG) $(PIC) $(OPTIONAL_COVERAGE) -preview=dtorfields
+UDFLAGS:=-conf= -Isrc -Iimport -w -de -preview=dip1000 -preview=fieldwise -m$(MODEL) $(PIC) $(OPTIONAL_COVERAGE) -preview=dtorfields
 ifeq ($(BUILD),debug)
 	UDFLAGS += -g -debug
 	DFLAGS:=$(UDFLAGS)
@@ -118,7 +118,7 @@ UTFLAGS:=-version=CoreUnittest -unittest -checkaction=context
 # Set PHOBOS_DFLAGS (for linking against Phobos)
 PHOBOS_PATH=../../phobos
 ROOT_DIR := $(shell pwd)
-PHOBOS_DFLAGS=-conf= $(MODEL_FLAG) -I$(ROOT_DIR)/import -I$(PHOBOS_PATH) -L-L$(PHOBOS_PATH)/generated/$(OS)/$(BUILD)/$(MODEL) $(PIC)
+PHOBOS_DFLAGS=-conf= -m$(MODEL) -I$(ROOT_DIR)/import -I$(PHOBOS_PATH) -L-L$(PHOBOS_PATH)/generated/$(OS)/$(BUILD)/$(MODEL) $(PIC)
 ifeq (1,$(SHARED))
 PHOBOS_DFLAGS+=-defaultlib=libphobos2$(DOTDLL) -L-rpath=$(PHOBOS_PATH)/generated/$(OS)/$(BUILD)/$(MODEL)
 endif
